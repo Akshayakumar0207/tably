@@ -1,4 +1,4 @@
-# Tably — Run & Deploy Guide (Beginner-Friendly)
+# TableReserve — Run & Deploy Guide (Beginner-Friendly)
 
 This guide assumes you know nothing about deployment. Follow every step in order.
 
@@ -61,11 +61,19 @@ source venv/bin/activate    # Mac/Linux
 python -m scripts.seed_data
 ```
 Wait for it to print `Done. Seeded 200 restaurants...`. It also creates ready-to-use demo accounts (all with password `password123`):
-- Admin: `admin@tably-demo.com`
-- Owners: `owner0@tably-demo.com` through `owner24@tably-demo.com`
-- Customers: `customer0@tably-demo.com` through `customer29@tably-demo.com`
+- Admin: `admin@tablereserve-demo.com`
+- Owners: `owner0@tablereserve-demo.com` through `owner24@tablereserve-demo.com`
+- Customers: `customer0@tablereserve-demo.com` through `customer29@tablereserve-demo.com`
 
-Refresh the frontend's search page — restaurants across Chennai, Bangalore, Salem, and Coimbatore should now appear immediately. About 10% are left in "pending" status on purpose, so you can log in as `admin@tably-demo.com` and try the restaurant-approval flow too.
+Every seeded restaurant also gets an auto-generated banner photo and a few interior photos (distinctive gradient graphics, not real photography — fully self-contained so nothing ever breaks or needs an API key).
+
+**Already seeded restaurants before and they have no images?** Run this instead — it only fills in images for restaurants that don't have any yet, without touching or duplicating anything else:
+```bash
+python -m scripts.backfill_images
+```
+It works against whatever database your `.env` currently points to — your local SQLite or your live Supabase database (see "Load demo data on the live site" further down for how to point it at Supabase).
+
+Refresh the frontend's search page — restaurants across Chennai, Bangalore, Salem, and Coimbatore should now appear immediately, each with its own photo. About 10% are left in "pending" status on purpose, so you can log in as `admin@tablereserve-demo.com` and try the restaurant-approval flow too.
 
 This script is safe to run only once per database — running it again will skip re-seeding unless you delete `tablereserve.db` first (or set `RESEED=1` before running it, to add another 200 on top).
 
@@ -174,11 +182,30 @@ You'll use 3 free services:
 **Your app is now live and free for anyone to use.**
 
 ### Optional: load demo data on the live site too
-In the Render dashboard, open your backend service → **Shell** tab (top right) → run:
+Render's Shell tab now requires a paid plan, so instead run the script from your own PC, pointed temporarily at your live Supabase database:
+
+1. Get your **pooler connection string** from Supabase (Settings → Database → Connection pooling → Transaction mode) — looks like:
+   ```
+   postgresql://postgres.<project-ref>:[YOUR-PASSWORD]@aws-0-<region>.pooler.supabase.com:6543/postgres
+   ```
+2. Temporarily edit `backend\.env` (or `backend/.env` on Mac/Linux) and set `DATABASE_URL` to that string (with your real password filled in)
+3. Run:
+   ```bash
+   cd backend
+   venv\Scripts\activate       # Windows
+   source venv/bin/activate    # Mac/Linux
+   pip install -r requirements.txt
+   python -m scripts.seed_data
+   ```
+   (or `python -m scripts.backfill_images` instead, if restaurants already exist on the live site and just need photos added)
+4. **Change `DATABASE_URL` in `backend\.env` back to `sqlite:///./tablereserve.db`** afterward, so your local dev environment goes back to normal and isn't accidentally still pointed at production.
+
+### Optional: add photos to restaurants that don't have any
+If you seeded restaurants before the image feature existed (or added a restaurant yourself without a banner), run this — it only fills in images for restaurants missing one, without touching anything else:
 ```bash
-python -m scripts.seed_data
+python -m scripts.backfill_images
 ```
-This runs the same seed script directly against your live Supabase database.
+Same idea as above: point `.env` at whichever database (local or live Supabase) you want to update, then switch it back afterward if needed.
 
 ## Step 5 — Make yourself an admin on the live site
 Same idea as local, but you'll run the promote-to-admin script against your Supabase database instead. Easiest way: in Supabase dashboard → **Table Editor** → `users` table → find your row → change the `role` column value from `customer` to `admin` directly in the table editor UI, then save.

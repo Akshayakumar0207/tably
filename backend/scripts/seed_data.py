@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.core.database import SessionLocal, Base, engine
 from app.core.security import hash_password
 from app.models import models as m
+from scripts.image_gen import generate_banner, generate_interior
 
 random.seed(42)
 
@@ -97,7 +98,7 @@ def build_tables(restaurant_id: str, db):
 
 
 def get_or_create_owner(db, index: int) -> m.OwnerProfile:
-    email = f"owner{index}@tably-demo.com"
+    email = f"owner{index}@tablereserve-demo.com"
     user = db.query(m.User).filter(m.User.email == email).first()
     if user:
         return user.owner_profile
@@ -121,7 +122,7 @@ def get_or_create_owner(db, index: int) -> m.OwnerProfile:
 def get_or_create_customers(db, n: int) -> list[m.User]:
     customers = []
     for i in range(n):
-        email = f"customer{i}@tably-demo.com"
+        email = f"customer{i}@tablereserve-demo.com"
         user = db.query(m.User).filter(m.User.email == email).first()
         if not user:
             user = m.User(
@@ -150,9 +151,9 @@ def seed(total_restaurants: int = 200, num_owners: int = 25, num_customers: int 
     print("Seeding dummy data — this may take a minute...")
 
     # Ensure a demo admin exists for convenience
-    if not db.query(m.User).filter(m.User.email == "admin@tably-demo.com").first():
+    if not db.query(m.User).filter(m.User.email == "admin@tablereserve-demo.com").first():
         db.add(m.User(
-            email="admin@tably-demo.com",
+            email="admin@tablereserve-demo.com",
             hashed_password=hash_password("password123"),
             full_name="Demo Admin",
             role=m.UserRole.admin,
@@ -186,11 +187,15 @@ def seed(total_restaurants: int = 200, num_owners: int = 25, num_customers: int 
             opening_time=time(open_hour, 0),
             closing_time=time(close_hour, 0),
             status=status,
+            cover_image_url=generate_banner(name, cuisine),
             avg_rating=0.0,
             review_count=0,
         )
         db.add(restaurant)
         db.flush()
+
+        for variant in range(random.randint(2, 4)):
+            db.add(m.RestaurantImage(restaurant_id=restaurant.id, url=generate_interior(name, variant)))
 
         build_tables(restaurant.id, db)
 
@@ -221,9 +226,9 @@ def seed(total_restaurants: int = 200, num_owners: int = 25, num_customers: int 
     print(f"Done. Seeded {total_restaurants} restaurants across {num_owners} owner accounts and {num_customers} customer accounts.")
     print()
     print("Demo login credentials (all use password: password123):")
-    print("  Admin:     admin@tably-demo.com")
-    print("  Owner:     owner0@tably-demo.com  (through owner24@tably-demo.com)")
-    print("  Customer:  customer0@tably-demo.com  (through customer29@tably-demo.com)")
+    print("  Admin:     admin@tablereserve-demo.com")
+    print("  Owner:     owner0@tablereserve-demo.com  (through owner24@tablereserve-demo.com)")
+    print("  Customer:  customer0@tablereserve-demo.com  (through customer29@tablereserve-demo.com)")
 
 
 if __name__ == "__main__":

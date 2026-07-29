@@ -1,8 +1,6 @@
-# Tably
+# TableReserve
 
 A production-ready restaurant table reservation platform with an interactive graphical floor map, built with React 19 + FastAPI.
-
-> **v3 note**: the app is now branded as **Tably** (favicon, page title, navbar all updated). The project folder/repo name stays `tablereserve` for continuity with your existing GitHub repo and deployment — only user-facing branding changed.
 
 - **Customers**: search restaurants, view an interactive floor map, book a specific table, get in-app notifications, leave reviews, save favorites.
 - **Restaurant Owners**: manage restaurants, design floor layouts (drag-and-drop tables), accept/reject/complete reservations, view dashboard analytics.
