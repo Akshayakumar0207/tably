@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Plus, Store, Star, LayoutGrid, CalendarCheck } from 'lucide-react'
+import { Plus, Store, Star, LayoutGrid, CalendarCheck, ImageOff } from 'lucide-react'
 import { api, apiErrorMessage } from '@/lib/api'
 import type { Restaurant, OwnerProfile } from '@/types'
 import { Card, Badge, Skeleton, EmptyState } from '@/components/ui/primitives'
 import { Button } from '@/components/ui/Button'
 import { Input, Select, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
+import { BannerUpload, GalleryUpload } from '@/components/ui/ImageUpload'
 import { useToastStore } from '@/store/toastStore'
 
 interface RestaurantFormData {
@@ -23,6 +24,9 @@ interface RestaurantFormData {
 
 export function OwnerDashboardPage() {
   const [addOpen, setAddOpen] = useState(false)
+  const [banner, setBanner] = useState<string | null>(null)
+  const [gallery, setGallery] = useState<string[]>([])
+  const [bannerError, setBannerError] = useState(false)
   const { push } = useToastStore()
   const qc = useQueryClient()
 
@@ -50,10 +54,18 @@ export function OwnerDashboardPage() {
   })
 
   const createMutation = useMutation({
-    mutationFn: async (data: RestaurantFormData) => api.post('/api/owner/restaurants', data),
+    mutationFn: async (data: RestaurantFormData) => {
+      const { data: restaurant } = await api.post<Restaurant>('/api/owner/restaurants', { ...data, cover_image_url: banner })
+      if (gallery.length) {
+        await Promise.all(gallery.map((url) => api.post(`/api/owner/restaurants/${restaurant.id}/images`, { url })))
+      }
+      return restaurant
+    },
     onSuccess: () => {
       push('Restaurant added! Awaiting admin approval.', 'success')
       setAddOpen(false)
+      setBanner(null)
+      setGallery([])
       qc.invalidateQueries({ queryKey: ['owner-restaurants'] })
     },
     onError: (e) => push(apiErrorMessage(e), 'error'),
@@ -65,6 +77,13 @@ export function OwnerDashboardPage() {
 
   if (profile === null) {
     return <OwnerOnboarding onSubmit={(name) => setupMutation.mutate(name)} loading={setupMutation.isPending} />
+  }
+
+  const submit = (d: RestaurantFormData) => {
+    if (!banner) { setBannerError(true); return }
+    setBannerError(false)
+    createMutation.mutate(d)
+    reset()
   }
 
   return (
@@ -90,26 +109,43 @@ export function OwnerDashboardPage() {
       <div className="grid sm:grid-cols-2 gap-6">
         {restaurants?.map((r, i) => (
           <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card className="p-5">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-lg">{r.name}</h3>
-                <Badge variant={r.status === 'approved' ? 'success' : r.status === 'rejected' ? 'danger' : 'warning'}>{r.status}</Badge>
+            <Card className="overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
+              <div className="aspect-[16/7] bg-[rgb(var(--color-surface-alt))] relative overflow-hidden group">
+                {r.cover_image_url ? (
+                  <img src={r.cover_image_url} alt={r.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[rgb(var(--color-text-muted))]">
+                    <ImageOff className="h-6 w-6" />
+                  </div>
+                )}
               </div>
-              <p className="text-sm text-[rgb(var(--color-text-muted))] mb-4">{r.city} · {r.cuisine}</p>
-              {r.review_count > 0 && (
-                <p className="text-sm flex items-center gap-1 mb-4"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {r.avg_rating.toFixed(1)} ({r.review_count} reviews)</p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <Link to={`/owner/restaurants/${r.id}/tables`}><Button size="sm" variant="outline"><LayoutGrid className="h-3.5 w-3.5" /> Floor Map</Button></Link>
-                <Link to={`/owner/restaurants/${r.id}/reservations`}><Button size="sm" variant="outline"><CalendarCheck className="h-3.5 w-3.5" /> Reservations</Button></Link>
+              <div className="p-5">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-semibold text-lg">{r.name}</h3>
+                  <Badge variant={r.status === 'approved' ? 'success' : r.status === 'rejected' ? 'danger' : 'warning'}>{r.status}</Badge>
+                </div>
+                <p className="text-sm text-[rgb(var(--color-text-muted))] mb-4">{r.city} · {r.cuisine}</p>
+                {r.review_count > 0 && (
+                  <p className="text-sm flex items-center gap-1 mb-4"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {r.avg_rating.toFixed(1)} ({r.review_count} reviews)</p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Link to={`/owner/restaurants/${r.id}/tables`}><Button size="sm" variant="outline"><LayoutGrid className="h-3.5 w-3.5" /> Floor Map</Button></Link>
+                  <Link to={`/owner/restaurants/${r.id}/reservations`}><Button size="sm" variant="outline"><CalendarCheck className="h-3.5 w-3.5" /> Reservations</Button></Link>
+                </div>
               </div>
             </Card>
           </motion.div>
         ))}
       </div>
 
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Restaurant">
-        <form onSubmit={handleSubmit((d) => { createMutation.mutate(d); reset() })} className="space-y-3">
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Restaurant" className="max-w-2xl">
+        <form onSubmit={handleSubmit(submit)} className="space-y-4">
+          <div>
+            <BannerUpload value={banner} onChange={(v) => { setBanner(v); if (v) setBannerError(false) }} label="Banner photo (required)" />
+            {bannerError && <p className="mt-1 text-xs text-[rgb(var(--color-danger))]">Please add a banner photo — this is what customers see first.</p>}
+          </div>
+          <GalleryUpload images={gallery} onChange={setGallery} label="Interior photos (optional)" />
+
           <Input label="Restaurant name" required {...register('name', { required: true })} />
           <Textarea label="Description" rows={3} {...register('description')} />
           <div className="grid grid-cols-2 gap-3">

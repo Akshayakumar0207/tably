@@ -83,11 +83,11 @@ def delete_restaurant(restaurant_id: str, db: Session = Depends(get_db),
 
 
 @router.post("/restaurants/{restaurant_id}/images", response_model=s.RestaurantImageOut, status_code=201)
-def add_restaurant_image(restaurant_id: str, url: str, db: Session = Depends(get_db),
+def add_restaurant_image(restaurant_id: str, payload: s.ImageUpload, db: Session = Depends(get_db),
                           current_user: m.User = Depends(require_role("owner", "admin"))):
     """
-    Registers an image URL after the frontend uploads the file directly to
-    Supabase Storage (see README). Keeps the API free of binary payloads.
+    Registers an image (as a data URL, compressed client-side) against a
+    restaurant. Kept free of any external storage dependency.
     """
     repo = RestaurantRepository(db)
     restaurant = repo.get(restaurant_id)
@@ -95,14 +95,38 @@ def add_restaurant_image(restaurant_id: str, url: str, db: Session = Depends(get
         raise HTTPException(status_code=404, detail="Restaurant not found")
     _check_ownership(db, current_user, restaurant)
 
-    image = m.RestaurantImage(restaurant_id=restaurant_id, url=url)
+    image = m.RestaurantImage(restaurant_id=restaurant_id, url=payload.url)
     db.add(image)
     db.commit()
     db.refresh(image)
     if not restaurant.cover_image_url:
-        restaurant.cover_image_url = url
+        restaurant.cover_image_url = payload.url
         repo.update(restaurant)
     return image
+
+
+@router.delete("/restaurants/{restaurant_id}/images/{image_id}")
+def delete_restaurant_image(restaurant_id: str, image_id: str, db: Session = Depends(get_db),
+                             current_user: m.User = Depends(require_role("owner", "admin"))):
+    repo = RestaurantRepository(db)
+    restaurant = repo.get(restaurant_id)
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    _check_ownership(db, current_user, restaurant)
+
+    image = db.query(m.RestaurantImage).filter(
+        m.RestaurantImage.id == image_id, m.RestaurantImage.restaurant_id == restaurant_id
+    ).first()
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    was_cover = restaurant.cover_image_url == image.url
+    db.delete(image)
+    db.commit()
+    if was_cover:
+        remaining = db.query(m.RestaurantImage).filter(m.RestaurantImage.restaurant_id == restaurant_id).first()
+        restaurant.cover_image_url = remaining.url if remaining else None
+        repo.update(restaurant)
+    return {"message": "Image deleted"}
 
 
 @router.get("/dashboard/{restaurant_id}")

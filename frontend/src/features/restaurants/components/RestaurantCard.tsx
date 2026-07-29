@@ -8,7 +8,7 @@ export function RestaurantCard({ restaurant, index = 0 }: { restaurant: Restaura
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}>
       <Link to={`/restaurants/${restaurant.id}`}>
-        <Card className="overflow-hidden group hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
+        <Card className="overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-200 h-full flex flex-col">
           <div className="aspect-[4/3] bg-[rgb(var(--color-surface-alt))] relative overflow-hidden">
             {restaurant.cover_image_url ? (
               <img src={restaurant.cover_image_url} alt={restaurant.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />

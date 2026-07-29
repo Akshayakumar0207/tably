@@ -66,6 +66,7 @@ class RestaurantCreate(BaseModel):
     phone: Optional[str] = None
     opening_time: time = time(9, 0)
     closing_time: time = time(22, 0)
+    cover_image_url: Optional[str] = None
 
 
 class RestaurantUpdate(BaseModel):
@@ -106,6 +107,10 @@ class RestaurantOut(BaseModel):
 class RestaurantImageOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
+    url: str
+
+
+class ImageUpload(BaseModel):
     url: str
 
 

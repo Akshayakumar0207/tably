@@ -27,12 +27,12 @@ def update_profile(payload: s.UserUpdate, db: Session = Depends(get_db),
 
 
 @router.put("/me/picture", response_model=s.UserOut)
-def update_profile_picture(url: str, db: Session = Depends(get_db),
+def update_profile_picture(payload: s.ImageUpload, db: Session = Depends(get_db),
                             current_user: m.User = Depends(get_current_user)):
     """
-    Accepts a URL returned by the frontend after it uploads directly to
-    Supabase Storage (see README - 'Enable image uploads').
+    Accepts a compressed data-URL image from the frontend (see README -
+    'Image uploads'). No external storage service required.
     """
     repo = UserRepository(db)
-    current_user.profile_picture_url = url
+    current_user.profile_picture_url = payload.url
     return repo.update(current_user)

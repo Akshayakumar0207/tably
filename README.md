@@ -19,6 +19,9 @@ Everything in this project runs on **free tiers only** — see `RUN_INSTRUCTIONS
 ## Demo data
 To populate the app with ~200 realistic dummy restaurants (with floor layouts and reviews) instead of starting from an empty database, run the seed script — see `RUN_INSTRUCTIONS.md` → "Load demo data" for exact steps.
 
+## Restaurant images
+When an owner adds a restaurant, a **banner photo is required** and up to 8 **interior photos** are optional. Images are compressed and resized in the browser (no upload limits to worry about) and stored directly in the database as the app requires — no external storage service (Supabase Storage, S3, etc.) needed, keeping the whole stack free with zero extra setup. Profile pictures work the same way.
+
 ## Project structure
 ```
 tablereserve/

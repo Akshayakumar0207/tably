@@ -56,7 +56,7 @@ class User(Base):
     full_name = Column(String, nullable=False)
     phone = Column(String, nullable=True)
     role = Column(SAEnum(UserRole), default=UserRole.customer, nullable=False)
-    profile_picture_url = Column(String, nullable=True)
+    profile_picture_url = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -99,7 +99,7 @@ class Restaurant(Base):
     opening_time = Column(Time, default=dt_time(9, 0))
     closing_time = Column(Time, default=dt_time(22, 0))
     status = Column(SAEnum(RestaurantStatus), default=RestaurantStatus.pending, nullable=False)
-    cover_image_url = Column(String, nullable=True)
+    cover_image_url = Column(Text, nullable=True)
     avg_rating = Column(Float, default=0.0)
     review_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -118,7 +118,7 @@ class RestaurantImage(Base):
 
     id = Column(String, primary_key=True, default=gen_uuid)
     restaurant_id = Column(String, ForeignKey("restaurants.id"), nullable=False)
-    url = Column(String, nullable=False)
+    url = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     restaurant = relationship("Restaurant", back_populates="images")

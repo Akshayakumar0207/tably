@@ -28,16 +28,34 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 glass">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
+        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold transition-transform duration-150 hover:scale-[1.02]">
           <UtensilsCrossed className="h-6 w-6 text-[rgb(var(--color-primary))]" />
-          Tably
+          TableReserve
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link to="/" className="hover:text-[rgb(var(--color-primary))]">Search</Link>
-          {user && <Link to="/reservations" className="hover:text-[rgb(var(--color-primary))]">My Bookings</Link>}
-          {user && <Link to="/favorites" className="hover:text-[rgb(var(--color-primary))]">Favorites</Link>}
-          {dashboardLink && <Link to={dashboardLink} className="hover:text-[rgb(var(--color-primary))]">Dashboard</Link>}
+          <Link to="/" className="relative py-1 group">
+            <span className="transition-colors group-hover:text-[rgb(var(--color-primary))]">Search</span>
+            <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-[rgb(var(--color-primary))] transition-all duration-200 group-hover:w-full" />
+          </Link>
+          {user && (
+            <Link to="/reservations" className="relative py-1 group">
+              <span className="transition-colors group-hover:text-[rgb(var(--color-primary))]">My Bookings</span>
+              <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-[rgb(var(--color-primary))] transition-all duration-200 group-hover:w-full" />
+            </Link>
+          )}
+          {user && (
+            <Link to="/favorites" className="relative py-1 group">
+              <span className="transition-colors group-hover:text-[rgb(var(--color-primary))]">Favorites</span>
+              <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-[rgb(var(--color-primary))] transition-all duration-200 group-hover:w-full" />
+            </Link>
+          )}
+          {dashboardLink && (
+            <Link to={dashboardLink} className="relative py-1 group">
+              <span className="transition-colors group-hover:text-[rgb(var(--color-primary))]">Dashboard</span>
+              <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-[rgb(var(--color-primary))] transition-all duration-200 group-hover:w-full" />
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
