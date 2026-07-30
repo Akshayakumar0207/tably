@@ -18,8 +18,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import SessionLocal, Base, engine
 from app.core.security import hash_password
+from app.core.config import settings
 from app.models import models as m
 from scripts.image_gen import generate_banner, generate_interior
+from scripts.pexels_fetch import build_photo_pools, pick_banner, pick_interiors
 
 random.seed(42)
 
@@ -163,6 +165,7 @@ def seed(total_restaurants: int = 200, num_owners: int = 25, num_customers: int 
 
     customers = get_or_create_customers(db, num_customers)
     used_names: set = set()
+    photo_pools = build_photo_pools(settings.PEXELS_API_KEY)
 
     for i in range(total_restaurants):
         owner_profile = get_or_create_owner(db, i % num_owners)
@@ -173,6 +176,8 @@ def seed(total_restaurants: int = 200, num_owners: int = 25, num_customers: int 
         close_hour = random.choice([21, 22, 23])
         # ~90% approved (so search works immediately), ~10% left pending to demo admin approval
         status = m.RestaurantStatus.approved if random.random() < 0.9 else m.RestaurantStatus.pending
+
+        cover_url = pick_banner(photo_pools, cuisine) or generate_banner(name, cuisine)
 
         restaurant = m.Restaurant(
             owner_id=owner_profile.id,
@@ -187,15 +192,19 @@ def seed(total_restaurants: int = 200, num_owners: int = 25, num_customers: int 
             opening_time=time(open_hour, 0),
             closing_time=time(close_hour, 0),
             status=status,
-            cover_image_url=generate_banner(name, cuisine),
+            cover_image_url=cover_url,
             avg_rating=0.0,
             review_count=0,
         )
         db.add(restaurant)
         db.flush()
 
-        for variant in range(random.randint(2, 4)):
-            db.add(m.RestaurantImage(restaurant_id=restaurant.id, url=generate_interior(name, variant)))
+        interior_count = random.randint(2, 4)
+        interior_urls = pick_interiors(photo_pools, interior_count)
+        if len(interior_urls) < interior_count:
+            interior_urls += [generate_interior(name, v) for v in range(interior_count - len(interior_urls))]
+        for url in interior_urls:
+            db.add(m.RestaurantImage(restaurant_id=restaurant.id, url=url))
 
         build_tables(restaurant.id, db)
 

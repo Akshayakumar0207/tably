@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Input, Select, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { BannerUpload, GalleryUpload } from '@/components/ui/ImageUpload'
+import { FadeImage } from '@/components/ui/FadeImage'
 import { useToastStore } from '@/store/toastStore'
 
 interface RestaurantFormData {
@@ -112,7 +113,7 @@ export function OwnerDashboardPage() {
             <Card className="overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
               <div className="aspect-[16/7] bg-[rgb(var(--color-surface-alt))] relative overflow-hidden group">
                 {r.cover_image_url ? (
-                  <img src={r.cover_image_url} alt={r.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <FadeImage src={r.cover_image_url} alt={r.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[rgb(var(--color-text-muted))]">
                     <ImageOff className="h-6 w-6" />

@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_KEY: str = ""
 
+    # Optional - free Pexels API key (https://www.pexels.com/api/) used only
+    # by the seed/backfill scripts to pull real restaurant photography.
+    # Leave blank and seeded restaurants get generated placeholder graphics
+    # instead - the app works fully either way.
+    PEXELS_API_KEY: str = ""
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]

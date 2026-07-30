@@ -200,8 +200,27 @@ Render's Shell tab now requires a paid plan, so instead run the script from your
    (or `python -m scripts.backfill_images` instead, if restaurants already exist on the live site and just need photos added)
 4. **Change `DATABASE_URL` in `backend\.env` back to `sqlite:///./tablereserve.db`** afterward, so your local dev environment goes back to normal and isn't accidentally still pointed at production.
 
-### Optional: add photos to restaurants that don't have any
-If you seeded restaurants before the image feature existed (or added a restaurant yourself without a banner), run this — it only fills in images for restaurants missing one, without touching anything else:
+### Optional: use real restaurant photos instead of generated graphics
+By default, seeded/backfilled restaurants get attractive generated placeholder graphics (gradient + icon), not real photography — this works with zero setup. To use **real, free-to-use restaurant photos** instead:
+
+1. Go to https://www.pexels.com/api/ → click **Get Started** → sign up free (no credit card)
+2. Copy your API key from the dashboard
+3. Add it to `backend\.env`:
+   ```
+   PEXELS_API_KEY=your_key_here
+   ```
+4. Also add it to **Render** → your backend service → Environment → new variable `PEXELS_API_KEY` (only needed there if you plan to run the seed/backfill scripts with `DATABASE_URL` pointed at Supabase, same as the pooler steps above)
+5. Run (or re-run) either script — restaurants will now get real photos instead of generated graphics:
+   ```bash
+   python -m scripts.seed_data
+   # or, to upgrade restaurants that already have generated graphics:
+   python -m scripts.backfill_images
+   ```
+
+Free tier covers 200 requests/hour / 20,000/month — seeding 200 restaurants uses about 10 requests total (photos are fetched in batches and reused across restaurants), so you'll never come close to the limit.
+
+### Optional: add or upgrade photos on existing restaurants
+Run this anytime — it fills in images for restaurants missing one, and **upgrades** any restaurant still showing generated graphics to a real photo if `PEXELS_API_KEY` is set (real photos you or an owner already uploaded are never touched):
 ```bash
 python -m scripts.backfill_images
 ```

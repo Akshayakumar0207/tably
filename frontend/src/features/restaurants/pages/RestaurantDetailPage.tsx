@@ -7,6 +7,7 @@ import { api, apiErrorMessage } from '@/lib/api'
 import type { Restaurant, RestaurantTable, Review } from '@/types'
 import { FloorMap } from '@/components/floor-map/FloorMap'
 import { Card, Badge, Skeleton } from '@/components/ui/primitives'
+import { FadeImage } from '@/components/ui/FadeImage'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Select } from '@/components/ui/Input'
@@ -71,7 +72,7 @@ export function RestaurantDetailPage() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <div className="aspect-[21/9] rounded-2xl overflow-hidden bg-[rgb(var(--color-surface-alt))] mb-6 group">
           {restaurant.cover_image_url ? (
-            <img src={restaurant.cover_image_url} alt={restaurant.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <FadeImage src={restaurant.cover_image_url} alt={restaurant.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-[rgb(var(--color-text-muted))]">No image available</div>
           )}
@@ -91,7 +92,14 @@ export function RestaurantDetailPage() {
             </div>
           </div>
           <Button variant="outline" onClick={() => favoriteMutation.mutate()}>
-            <Heart className="h-4 w-4" /> Save
+            <motion.span
+              className="inline-flex"
+              animate={favoriteMutation.isSuccess ? { scale: [1, 1.4, 1] } : {}}
+              transition={{ duration: 0.35 }}
+            >
+              <Heart className={favoriteMutation.isSuccess ? 'h-4 w-4 fill-[rgb(var(--color-primary))] text-[rgb(var(--color-primary))]' : 'h-4 w-4'} />
+            </motion.span>
+            Save
           </Button>
         </div>
 
@@ -103,7 +111,7 @@ export function RestaurantDetailPage() {
             <div className="flex gap-3 overflow-x-auto pb-2">
               {gallery.map((img) => (
                 <div key={img.id} className="shrink-0 w-40 h-28 rounded-xl overflow-hidden group cursor-pointer">
-                  <img src={img.url} alt="Restaurant interior" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                  <FadeImage src={img.url} alt="Restaurant interior" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                 </div>
               ))}
             </div>

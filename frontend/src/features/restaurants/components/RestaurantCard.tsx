@@ -3,6 +3,7 @@ import { Star, MapPin, UtensilsCrossed } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { Restaurant } from '@/types'
 import { Card, Badge } from '@/components/ui/primitives'
+import { FadeImage } from '@/components/ui/FadeImage'
 
 export function RestaurantCard({ restaurant, index = 0 }: { restaurant: Restaurant; index?: number }) {
   return (
@@ -11,7 +12,7 @@ export function RestaurantCard({ restaurant, index = 0 }: { restaurant: Restaura
         <Card className="overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-200 h-full flex flex-col">
           <div className="aspect-[4/3] bg-[rgb(var(--color-surface-alt))] relative overflow-hidden">
             {restaurant.cover_image_url ? (
-              <img src={restaurant.cover_image_url} alt={restaurant.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <FadeImage src={restaurant.cover_image_url} alt={restaurant.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <UtensilsCrossed className="h-10 w-10 text-[rgb(var(--color-text-muted))]" />

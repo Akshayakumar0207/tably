@@ -68,8 +68,11 @@ export function Navbar() {
               <button onClick={() => setNotifOpen((o) => !o)} className="relative p-2 rounded-lg hover:bg-[rgb(var(--color-surface-alt))]" aria-label="Notifications">
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[rgb(var(--color-primary))] text-white text-[10px] flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4">
+                    <span className="absolute inset-0 rounded-full bg-[rgb(var(--color-primary))] animate-ping opacity-60" />
+                    <span className="relative h-4 w-4 rounded-full bg-[rgb(var(--color-primary))] text-white text-[10px] flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
                   </span>
                 )}
               </button>
